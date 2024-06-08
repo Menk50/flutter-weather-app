@@ -4,7 +4,8 @@ import 'package:menk_weather/blocs/weather_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:menk_weather/widgets/weather_list.dart';
 import 'package:menk_weather/main.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // MyApp sınıfına erişim için ekleyin
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:menk_weather/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -43,6 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _changeLanguage(Locale locale) {
+    MyApp.of(context).changeLocale(locale);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = GoRouter.of(context).routerDelegate.currentConfiguration;
@@ -50,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (state is! RouteMatchList) {
       return Scaffold(
         body: Center(
-          child: Text('Invalid state'),
+          child: Text(AppLocalizations.of(context)!.translate('invalidState')),
         ),
       );
     }
@@ -64,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Weather App'),
+        title: Text(AppLocalizations.of(context)!.translate('appTitle')),
         actions: [
           IconButton(
             icon: Icon(Icons.search),
@@ -77,6 +82,24 @@ class _HomeScreenState extends State<HomeScreen> {
             onChanged: (value) {
               _toggleTheme();
             },
+          ),
+          DropdownButton<Locale>(
+            icon: Icon(Icons.language),
+            onChanged: (Locale? locale) {
+              if (locale != null) {
+                _changeLanguage(locale);
+              }
+            },
+            items: [
+              DropdownMenuItem(
+                value: Locale('en'),
+                child: Text('English'),
+              ),
+              DropdownMenuItem(
+                value: Locale('tr'),
+                child: Text('Türkçe'),
+              ),
+            ],
           ),
         ],
       ),

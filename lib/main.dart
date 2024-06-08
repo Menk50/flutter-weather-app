@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:menk_weather/blocs/weather_bloc.dart';
 import 'package:menk_weather/screens/city_selection_screen.dart';
@@ -11,6 +12,7 @@ import 'package:menk_weather/utils/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:menk_weather/repositories/weather_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'l10n/app_localizations.dart';
 
 void main() {
   runApp(MyApp());
@@ -29,11 +31,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
+  Locale _locale = Locale('en');
 
   @override
   void initState() {
     super.initState();
     _loadTheme();
+    _loadLocale();
   }
 
   void changeTheme(ThemeMode themeMode) async {
@@ -42,6 +46,14 @@ class _MyAppState extends State<MyApp> {
     });
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('themeMode', themeMode.toString());
+  }
+
+  void changeLocale(Locale locale) async {
+    setState(() {
+      _locale = locale;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', locale.languageCode);
   }
 
   void _loadTheme() async {
@@ -59,6 +71,14 @@ class _MyAppState extends State<MyApp> {
           _themeMode = ThemeMode.system;
           break;
       }
+    });
+  }
+
+  void _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final localeString = prefs.getString('locale');
+    setState(() {
+      _locale = localeString != null ? Locale(localeString) : Locale('en');
     });
   }
 
@@ -112,6 +132,17 @@ class _MyAppState extends State<MyApp> {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: _themeMode,
+        locale: _locale,
+        supportedLocales: [
+          Locale('en'),
+          Locale('tr'),
+        ],
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
       ),
     );
   }

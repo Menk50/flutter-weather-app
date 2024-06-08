@@ -31,7 +31,15 @@ class WeatherRepository {
 
     if (weatherData != null) {
       final List<dynamic> weatherList = jsonDecode(weatherData);
-      return weatherList.map((json) => Weather.fromJson(json)).toList();
+      final List<Weather> weathers =
+          weatherList.map((json) => Weather.fromJson(json)).toList();
+
+      final uniqueWeathers = <String, Weather>{};
+      for (var weather in weathers) {
+        uniqueWeathers[weather.name] = weather;
+      }
+
+      return uniqueWeathers.values.toList();
     }
 
     return [];
@@ -41,8 +49,16 @@ class WeatherRepository {
     final prefs = await SharedPreferences.getInstance();
     final List<Weather> savedWeather = await getSavedWeather();
 
-    // Yeni veriyi mevcut verilere ekle
-    savedWeather.add(weather);
+    // Aynı şehrin verisinin olup olmadığını kontrol et
+    final existingWeatherIndex =
+        savedWeather.indexWhere((w) => w.name == weather.name);
+    if (existingWeatherIndex != -1) {
+      // Aynı şehir varsa, mevcut veriyi güncelle
+      savedWeather[existingWeatherIndex] = weather;
+    } else {
+      // Aynı şehir yoksa, yeni veriyi ekle
+      savedWeather.add(weather);
+    }
 
     // Verileri JSON formatına çevir ve kaydet
     final String weatherData =

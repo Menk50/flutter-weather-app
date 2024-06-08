@@ -34,7 +34,13 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
     emit(WeatherLoading());
     try {
       previousWeather = await weatherRepository.getSavedWeather();
+
       if (previousWeather.isNotEmpty) {
+        final uniquePreviousWeather = <String, Weather>{};
+        for (var weather in previousWeather) {
+          uniquePreviousWeather[weather.name] = weather;
+        }
+        previousWeather = uniquePreviousWeather.values.toList();
         emit(WeatherLoaded(previousWeather, previousWeather.last));
       } else {
         emit(WeatherLoaded([], null));

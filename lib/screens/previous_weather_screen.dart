@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:menk_weather/blocs/weather_bloc.dart';
 import 'package:menk_weather/widgets/weather_card.dart';
+import 'package:menk_weather/l10n/app_localizations.dart';
 
 class PreviousWeatherScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final localization = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Previous Weather'),
+        title: Text(localization.translate('previousWeather')),
       ),
       body: BlocBuilder<WeatherBloc, WeatherState>(
         builder: (context, state) {
@@ -24,7 +26,8 @@ class PreviousWeatherScreen extends StatelessWidget {
           } else if (state is WeatherError) {
             return Center(child: Text(state.message));
           } else {
-            return Center(child: Text('No previous weather data'));
+            return Center(
+                child: Text(localization.translate('noPreviousWeatherData')));
           }
         },
       ),

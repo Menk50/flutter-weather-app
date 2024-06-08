@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:menk_weather/l10n/app_localizations.dart';
+import 'package:menk_weather/main.dart';
 
 class OnboardingScreen extends StatefulWidget {
   @override
@@ -10,23 +12,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-
-  final List<Map<String, String>> _onboardingData = [
-    {
-      'title': 'Welcome to Menk Weather',
-      'description': 'Get accurate weather forecasts for your city.'
-    },
-    {
-      'title': 'Detailed Weather Information',
-      'description':
-          'See detailed weather information including temperature, humidity, and wind speed.'
-    },
-    {
-      'title': 'Stay Updated',
-      'description':
-          'Receive real-time weather updates and stay prepared for any weather condition.'
-    },
-  ];
+  bool isDarkMode = false;
 
   void _onPageChanged(int page) {
     setState(() {
@@ -40,25 +26,85 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     context.go('/home');
   }
 
+  void _toggleTheme() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+    if (isDarkMode) {
+      MyApp.of(context).changeTheme(ThemeMode.dark);
+    } else {
+      MyApp.of(context).changeTheme(ThemeMode.light);
+    }
+  }
+
+  void _changeLanguage(Locale locale) {
+    MyApp.of(context).changeLocale(locale);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final localization = AppLocalizations.of(context)!;
+    final List<Map<String, String>> onboardingData = [
+      {
+        'title': localization.translate('welcomeMessage'),
+        'description': localization.translate('detailedWeatherInfo'),
+      },
+      {
+        'title': localization.translate('detailedWeatherInfo'),
+        'description': localization.translate('stayUpdated'),
+      },
+      {
+        'title': localization.translate('stayUpdated'),
+        'description': localization.translate('getStarted'),
+      },
+    ];
+
     return Scaffold(
+      appBar: AppBar(
+        title: Text(localization.translate('appTitle')),
+        actions: [
+          Switch(
+            value: isDarkMode,
+            onChanged: (value) {
+              _toggleTheme();
+            },
+          ),
+          DropdownButton<Locale>(
+            icon: Icon(Icons.language),
+            onChanged: (Locale? locale) {
+              if (locale != null) {
+                _changeLanguage(locale);
+              }
+            },
+            items: [
+              DropdownMenuItem(
+                value: Locale('en'),
+                child: Text('English'),
+              ),
+              DropdownMenuItem(
+                value: Locale('tr'),
+                child: Text('Türkçe'),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: PageView.builder(
         controller: _pageController,
         onPageChanged: _onPageChanged,
-        itemCount: _onboardingData.length,
+        itemCount: onboardingData.length,
         itemBuilder: (context, index) {
           return OnboardingPage(
-            title: _onboardingData[index]['title']!,
-            description: _onboardingData[index]['description']!,
+            title: onboardingData[index]['title']!,
+            description: onboardingData[index]['description']!,
           );
         },
       ),
-      bottomSheet: _currentPage == _onboardingData.length - 1
+      bottomSheet: _currentPage == onboardingData.length - 1
           ? TextButton(
               onPressed: _completeOnboarding,
               child: Text(
-                'Get Started',
+                localization.translate('getStarted'),
                 style: TextStyle(fontSize: 20, color: Colors.blue),
               ),
               style: TextButton.styleFrom(
@@ -73,7 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_onboardingData.length, (index) {
+                children: List.generate(onboardingData.length, (index) {
                   return AnimatedContainer(
                     duration: Duration(milliseconds: 300),
                     margin: EdgeInsets.symmetric(horizontal: 5),
